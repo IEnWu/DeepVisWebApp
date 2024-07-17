@@ -214,37 +214,113 @@ def process_file(filepath):
     df1.to_csv(descriptors_path, index=False)
     
     dataset_pred = pd.read_csv(descriptors_path)
-    X = dataset_pred.values
-    scaler = joblib.load("DeepViscosity_scaler/DeepViscosity_scaler.save")
-    X_scaled = scaler.transform(X)
+
+    feature_ACSINS = dataset_pred[['SAP_pos_CDRH1', 'SAP_pos_CDRL3', 'SCM_pos_CDRH1','SCM_neg_CDR']]
+    feature_AS = dataset_pred[['SAP_pos_CDRH2','SCM_pos_CDRL2','SCM_pos_CDRL3','SCM_neg_CDRL3']]
+    feature_BVP = dataset_pred[['SAP_pos_CDRH1','SAP_pos_CDRH3','SCM_pos_CDR','SCM_neg_CDRH3']]
+    feature_CIC = dataset_pred[['SAP_pos_CDRL2', 'SAP_pos_CDRL3', 'SAP_pos_Lv','SCM_neg_CDR']]
+    feature_CSI = dataset_pred[['SAP_pos_CDRL1', 'SAP_pos_Lv', 'SCM_pos_CDRH2','SCM_neg_CDRL2']]
+    feature_ELISA = dataset_pred[['SAP_pos_CDRH3', 'SCM_pos_CDR','SCM_neg_CDR']]
+    feature_HIC = dataset_pred[['SAP_pos_CDRL3', 'SAP_pos_CDR','SAP_pos_Hv','SCM_pos_CDRH3']]
+    feature_HEK = dataset_pred[['SAP_pos_CDRH2','SAP_pos_CDRL3','SCM_pos_Lv','SCM_neg_Lv']]
+    feature_PSR = dataset_pred[['SAP_pos_Lv', 'SCM_pos_CDRH2', 'SCM_neg_CDRL2']]
+    feature_SGAC = dataset_pred[['SAP_pos_CDRH1', 'SAP_pos_CDRL3', 'SCM_neg_CDRH2','SCM_neg_Lv']]
+    feature_SMAC = dataset_pred[['SAP_pos_CDR', 'SAP_pos_Fv', 'SCM_neg_CDRL2','SCM_neg_Fv']]
+    feature_Tm = dataset_pred[['SAP_pos_CDRH1', 'SAP_pos_CDRH2', 'SCM_pos_CDRH3']]
     
-    model_preds = []
-    for i in range(102):
-        file = 'ANN_logo_' + str(i)
-        with open('DeepViscosity_ANN_ensemble_models/'+file+'.json', 'r') as json_file:
-            loaded_model_json = json_file.read()
+    X_ACSINS = feature_ACSINS.values
+    X_AS = feature_AS.values
+    X_BVP = feature_BVP.values
+    X_CIC = feature_CIC.values
+    X_CSI = feature_CSI.values
+    X_ELISA = feature_ELISA.values
+    X_HIC = feature_HIC.values
+    X_HEK = feature_HEK.values
+    X_PSR = feature_PSR.values
+    X_SGAC = feature_SGAC.values
+    X_SMAC = feature_SMAC.values
+    X_Tm = feature_Tm.values
 
-        model = model_from_json(loaded_model_json)
-        model.load_weights('DeepViscosity_ANN_ensemble_models/'+file+'.h5')
-        model.compile(optimizer=Adam(0.0001), metrics=['accuracy'])
+    ACSINS_model = joblib.load('trained_models/models/ACSINS_SVR_model.joblib')
+    ACSINS_Scaler = joblib.load('trained_models/scalers/scaler_ACSINS.joblib')
+    X_ACSINS = ACSINS_Scaler.transform(X_ACSINS)
+    prediction_ACSINS = ACSINS_model.predict(X_ACSINS)
 
-        pred = model.predict(X_scaled, verbose=0)
-        model_preds.append(pred)
+    AS_model = joblib.load('trained_models/models/AS_LR_model.joblib')
+    AS_Scaler = joblib.load('trained_models/scalers/scaler_AS.joblib')
+    X_AS = AS_Scaler.transform(X_AS)
+    prediction_AS = AS_model.predict(X_AS)
 
-        # Combine the predictions using majority voting
-        final_pred = np.where(np.array(model_preds).mean(axis=0) >= 0.5, 1, 0)
-    
+    BVP_model = joblib.load('trained_models/models/BVP_KNN_model.joblib')
+    BVP_Scaler = joblib.load('trained_models/scalers/scaler_BVP.joblib')
+    X_BVP = BVP_Scaler.transform(X_BVP)
+    prediction_BVP = BVP_model.predict(X_BVP)
+
+    CIC_model = joblib.load('trained_models/models/CIC_KNN_model.joblib')
+    CIC_Scaler = joblib.load('trained_models/scalers/scaler_CIC.joblib')
+    X_CIC = CIC_Scaler.transform(X_CIC)
+    prediction_CIC = CIC_model.predict(X_CIC)
+
+    CSI_model = joblib.load('trained_models/models/CSI_SVR_model.joblib')
+    CSI_Scaler = joblib.load('trained_models/scalers/scaler_CSI.joblib')
+    X_CSI = CSI_Scaler.transform(X_CSI)
+    prediction_CSI = CSI_model.predict(X_CSI)
+
+    ELISA_model = joblib.load('trained_models/models/ELISA_KNN_model.joblib')
+    ELISA_Scaler = joblib.load('trained_models/scalers/scaler_ELISA.joblib')
+    X_ELISA = ELISA_Scaler.transform(X_ELISA)
+    prediction_ELISA = ELISA_model.predict(X_ELISA)
+
+    HEK_model = joblib.load('trained_models/models/HEK_KNN_model.joblib')
+    HEK_Scaler = joblib.load('trained_models/scalers/scaler_HEK.joblib')
+    X_HEK = HEK_Scaler.transform(X_HEK)
+    prediction_HEK = HEK_model.predict(X_HEK)
+
+    HIC_model = joblib.load('trained_models/models/HIC_SVR_model.joblib')
+    HIC_Scaler = joblib.load('trained_models/scalers/scaler_HIC.joblib')
+    X_HIC = HIC_Scaler.transform(X_HIC)
+    prediction_HIC = HIC_model.predict(X_HIC)
+
+    PSR_model = joblib.load('trained_models/models/PSR_SVR_model.joblib')
+    PSR_Scaler = joblib.load('trained_models/scalers/scaler_PSR.joblib')
+    X_PSR = PSR_Scaler.transform(X_PSR)
+    prediction_PSR = PSR_model.predict(X_PSR)
+
+    SGAC_model = joblib.load('trained_models/models/SGAC_SVR_model.joblib')
+    SGAC_Scaler = joblib.load('trained_models/scalers/scaler_SGAC.joblib')
+    X_SGAC = SGAC_Scaler.transform(X_SGAC)
+    prediction_SGAC = SGAC_model.predict(X_SGAC)
+
+    SMAC_model = joblib.load('trained_models/models/SMAC_KNN_model.joblib')
+    SMAC_Scaler = joblib.load('trained_models/scalers/scaler_SMAC.joblib')
+    X_SMAC = SMAC_Scaler.transform(X_SMAC)
+    prediction_SMAC = SMAC_model.predict(X_SMAC)
+
+    Tm_model = joblib.load('trained_models/models/Tm_KNN_model.joblib')
+    Tm_Scaler = joblib.load('trained_models/scalers/scaler_Tm.joblib')
+    X_Tm = Tm_Scaler.transform(X_Tm)
+    prediction_Tm = Tm_model.predict(X_Tm)
 
     #df2 = pd.concat([pd.DataFrame(name_list), pd.DataFrame(prediction_ACSINS), pd.DataFrame(prediction_AS), pd.DataFrame(prediction_BVP), pd.DataFrame(prediction_CIC), pd.DataFrame(prediction_CSI), pd.DataFrame(prediction_ELISA), pd.DataFrame(prediction_HIC), pd.DataFrame(prediction_HEK), pd.DataFrame(prediction_PSR), pd.DataFrame(prediction_SGAC), pd.DataFrame(prediction_SMAC), pd.DataFrame(prediction_Tm)], ignore_index=True, axis=1)
     #df2.columns = ['Name', 'ACSINS_transformed', 'AS', 'BVP', 'CIC_transformed', 'CSI_transformed', 'ELISA', 'HIC', 'HEK', 'PSR', 'SGAC_transformed', 'SMAC_transformed', 'Tm']
     
     #prediction_path = 'uploads/Biophysical_Prediction.csv'
     #df2.to_csv(prediction_path, index=False)
-
     df2 = pd.DataFrame({
-        'Name':name_list,
-        'DeepViscosity_classes':final_pred
-    })
+    'Name': name_list,
+    'ACSINS_transformed': format_predictions(prediction_ACSINS),
+    'AS': format_predictions(prediction_AS),
+    'BVP': format_predictions(prediction_BVP),
+    'CIC_transformed': format_predictions(prediction_CIC),
+    'CSI_transformed': format_predictions(prediction_CSI),
+    'ELISA': format_predictions(prediction_ELISA),
+    'HIC': format_predictions(prediction_HIC),
+    'HEK': format_predictions(prediction_HEK),
+    'PSR': format_predictions(prediction_PSR),
+    'SGAC_transformed': format_predictions(prediction_SGAC),
+    'SMAC_transformed': format_predictions(prediction_SMAC),
+    'Tm': format_predictions(prediction_Tm)
+})
 
     prediction_path = 'uploads/Biophysical_Prediction.csv'
     df2.to_csv(prediction_path, index=False)
