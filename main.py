@@ -207,10 +207,11 @@ def process_file(filepath):
     df1.to_csv(descriptors_path, index=False)
     
     dataset_pred = pd.read_csv(descriptors_path)
-    scaler = joblib.load("DeepViscosity_scaler/DeepViscosity_scaler.save")
-    X_scaled = scaler.transform(dataset_pred)
 
-    model_preds = []
+    X = dataset_pred.values
+    scaler = joblib.load("DeepViscosity_scaler/DeepViscosity_scaler.save")
+    X_scaled = scaler.transform(X)
+
     for i in range(102):
         file = 'ANN_logo_' + str(i)
         with open('DeepViscosity_ANN_ensemble_models/'+file+'.json', 'r') as json_file:
@@ -221,17 +222,15 @@ def process_file(filepath):
         model.compile(optimizer=Adam(0.0001), metrics=['accuracy'])
 
         pred = model.predict(X_scaled, verbose=0)
-        model_preds.append(pred)
 
         # Combine the predictions using majority voting
-        final_pred = np.where(np.array(model_preds).mean(axis=0) >= 0.5, 1, 0)
+        final_pred = np.where(np.array(pred).mean(axis=0) >= 0.5, 1, 0)
 
     prediction_path = 'uploads/Biophysical_Prediction.csv'
-    df_deepvis = pd.concat([pd.DataFrame(name_list), pd.DataFrame(final_pred)], ignore_index=True, axis=1,); df_deepvis.columns = ['Name', 'DeepViscosity_classes']
+    df_deepvis = pd.concat([pd.DataFrame(name_list), pd.DataFrame(final_pred)], ignore_index=True, axis=1,)
+    df_deepvis.columns = ['Name', 'DeepViscosity_classes']
     df_deepvis.to_csv(prediction_path, index=False)
     
     return descriptors_path, prediction_path
-
-
 
     
