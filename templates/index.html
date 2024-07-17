@@ -67,16 +67,13 @@
                 </form>
 
             </div>
-
             <div id="result">
-                <h1>Results</h1>
+                <h1>> Result</h1>
                 
-                <!-- DeepSP Descriptors Table -->
-                {% if descriptors_path %}
-                    <h2>DeepSP Descriptors</h2>
-                    <div style="overflow-x: auto; max-height: 400px;">
+                {% if csv_path %}                    
+                    <div style="overflow-x: auto; max-height: 400px;">               
                         <table style="border: 1px solid black; border-collapse: collapse;">
-                            {% for row in descriptors_data %}
+                            {% for row in csv_data %}
                                 <tr>
                                     {% for item in row %}
                                         <td style="border: 1px solid black; padding: 8px;">{{ item }}</td>
@@ -85,9 +82,11 @@
                             {% endfor %}
                         </table>
                     </div>
-                    <p>Download the DeepSP Descriptors file here: <a href="{{ url_for('download_file', filename=descriptors_path) }}">{{ descriptors_path }}</a></p>
+                    <p>Download the result file here: <a href="{{ url_for('download_file', filename='DeepSP_descriptors.csv')}}">{{ csv_path }}</a></p>
+                {% else %}
+                    <p>No results available.</p>
                 {% endif %}
-                
+            </div> 
                 <!-- Prediction Results Table 
                 {% if predictions_path %}
                 <h2>Prediction Results</h2>
