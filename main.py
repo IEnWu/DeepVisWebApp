@@ -20,6 +20,13 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 #################
 
+def format_predictions(predictions):
+    if len(predictions.shape) > 1:
+        formatted = np.round(predictions, 3)
+    else:
+        formatted = [round(pred, 3) for pred in predictions]
+    return formatted
+
 def process_file(filepath):
 
     dataset = pd.read_csv(filepath)
@@ -201,17 +208,17 @@ def process_file(filepath):
     features = ['Name', 'SAP_pos_CDRH1','SAP_pos_CDRH2','SAP_pos_CDRH3','SAP_pos_CDRL1','SAP_pos_CDRL2','SAP_pos_CDRL3','SAP_pos_CDR','SAP_pos_Hv','SAP_pos_Lv','SAP_pos_Fv',
             'SCM_neg_CDRH1','SCM_neg_CDRH2','SCM_neg_CDRH3','SCM_neg_CDRL1','SCM_neg_CDRL2','SCM_neg_CDRL3','SCM_neg_CDR','SCM_neg_Hv','SCM_neg_Lv','SCM_neg_Fv',
             'SCM_pos_CDRH1','SCM_pos_CDRH2','SCM_pos_CDRH3','SCM_pos_CDRL1','SCM_pos_CDRL2','SCM_pos_CDRL3','SCM_pos_CDR','SCM_pos_Hv','SCM_pos_Lv','SCM_pos_Fv']
-    df1 = pd.concat([pd.DataFrame(name_list), pd.DataFrame(sap_pos), pd.DataFrame(scm_neg), pd.DataFrame(scm_pos)], ignore_index=True, axis=1)
+    df1 = pd.concat([pd.DataFrame(name_list), pd.DataFrame(format_predictions(sap_pos)), pd.DataFrame(format_predictions(scm_neg)), pd.DataFrame(format_predictions(scm_pos))], ignore_index=True, axis=1)
     df1.columns = features
     descriptors_path = 'uploads/DeepSP_descriptors.csv'
     df1.to_csv(descriptors_path, index=False)
     
     dataset_pred = pd.read_csv(descriptors_path)
-
     X = dataset_pred.values
     scaler = joblib.load("DeepViscosity_scaler/DeepViscosity_scaler.save")
     X_scaled = scaler.transform(X)
-
+    
+    model_preds = []
     for i in range(102):
         file = 'ANN_logo_' + str(i)
         with open('DeepViscosity_ANN_ensemble_models/'+file+'.json', 'r') as json_file:
@@ -222,15 +229,24 @@ def process_file(filepath):
         model.compile(optimizer=Adam(0.0001), metrics=['accuracy'])
 
         pred = model.predict(X_scaled, verbose=0)
+        model_preds.append(pred)
 
         # Combine the predictions using majority voting
-        final_pred = np.where(np.array(pred).mean(axis=0) >= 0.5, 1, 0)
+        final_pred = np.where(np.array(model_preds).mean(axis=0) >= 0.5, 1, 0)
+    
+
+    #df2 = pd.concat([pd.DataFrame(name_list), pd.DataFrame(prediction_ACSINS), pd.DataFrame(prediction_AS), pd.DataFrame(prediction_BVP), pd.DataFrame(prediction_CIC), pd.DataFrame(prediction_CSI), pd.DataFrame(prediction_ELISA), pd.DataFrame(prediction_HIC), pd.DataFrame(prediction_HEK), pd.DataFrame(prediction_PSR), pd.DataFrame(prediction_SGAC), pd.DataFrame(prediction_SMAC), pd.DataFrame(prediction_Tm)], ignore_index=True, axis=1)
+    #df2.columns = ['Name', 'ACSINS_transformed', 'AS', 'BVP', 'CIC_transformed', 'CSI_transformed', 'ELISA', 'HIC', 'HEK', 'PSR', 'SGAC_transformed', 'SMAC_transformed', 'Tm']
+    
+    #prediction_path = 'uploads/Biophysical_Prediction.csv'
+    #df2.to_csv(prediction_path, index=False)
+
+    df2 = pd.DataFrame({
+        'Name':name_list,
+        'DeepViscosity_classes':final_pred
+    })
 
     prediction_path = 'uploads/Biophysical_Prediction.csv'
-    df_deepvis = pd.concat([pd.DataFrame(name_list), pd.DataFrame(final_pred)], ignore_index=True, axis=1,)
-    df_deepvis.columns = ['Name', 'DeepViscosity_classes']
-    df_deepvis.to_csv(prediction_path, index=False)
-    
-    return descriptors_path, prediction_path
+    df2.to_csv(prediction_path, index=False)
 
-    
+    return descriptors_path, prediction_path

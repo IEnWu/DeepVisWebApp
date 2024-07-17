@@ -17,28 +17,27 @@
 
     <main>
         <section id="deepSP">
-            <div class = "text-container">DeepSP </div>
+            <div class = "text-container">AbDev </div>
         </section>
             <div id="about">
-                <h1>> About DeepSP</h1>
+                <h1>> About AbDev</h1>
             </div> 
             <div id="intro">
-                <h3>DeepSP: An antibody specific deep learning surrogate model for predicting antibody stability.</h3>
-                <p>DeepSP is a computational tool that utilizes deep learning to predict 30 structural properties of monoclonal antibodies, including spatial aggregation propensity (SAP), spatial negative charge map (SCM_neg) and spatial positive charge map (SCM_pos) scores, directly from variable region sequence information. This innovative approach eliminates the need for time-consuming and computationally demanding molecular dynamics (MD) simulations and captures surface hydrophobicity, negative charge and positive charge distribution in 10 domains (CDRH1, CDRH2, CDRH3, CDRL1, CDRL2, CDRL3, CDR, Hv, Lv, Fv) of antibodies.</p>
+                <h3>AbDev: Machine learning models for 12 biophysical properties prediction.</h3>
+                <p>AbDev is a comprehensive predictive model package designed for the analysis of 12 critical biophysical properties of monoclonal antibodies (mAbs). This tool combines a deep learning-based tool, DeepSP, and machine learning techniques to provide insights based on the variable regions sequences of mAbs.</p>
                 <style>
                     #intro p {
                         text-align: justify;
                     }
                 </style>
-                <h3>How to Use DeepSP:</h3>
+                <h3>How to Use AbDev:</h3>
                 <ol>
                     <li>Enter the name of your antibody in the first text box.</li>
                     <li>Enter the heavy chain variable region sequence in the second text box. </li>
                     <li>Enter the light chain variable region sequence in the third text box. </li>
-                    <li>Click the "Submit" button to generate thirty (30) DeepSP descriptors. </li>
+                    <li>Click the "Submit" button to generate twelve (12) Biopysical properties. </li>
                 </ol>
-                <h3>Note: To process large datasets at once, please refer to our <a href="https://github.com/Lailabcode/DeepSP" target="_blank">GitHub</a>.</h3>
-                <h3>Citation: <a href="https://www.biorxiv.org/content/10.1101/2024.02.28.582582v1" target="_blank">DeepSP's manuscript</a> is currently under peer review and is temporarily available on bioRxiv for reference. </h3>
+                <h3>Note: To process large datasets at once, please refer to our <a href="https://github.com/Lailabcode/AbDev" target="_blank">GitHub</a>.</h3>
             </div> 
             <div id="sequence-submission">
                 <h1>> Sequence Submission</h1>
@@ -89,23 +88,47 @@
                     <p>Download the DeepSP Descriptors file here: <a href="{{ url_for('download_file', filename=descriptors_path) }}">{{ descriptors_path }}</a></p>
                 {% endif %}
                 
-                <!-- Prediction Results Table 
+                <!-- Prediction Results Table -->
                 {% if predictions_path %}
-                    <h2>Prediction Results</h2>
-                    <div style="overflow-x: auto; max-height: 400px;">
-                        <table style="border: 1px solid black; border-collapse: collapse;">
-                            {% for row in predictions_data %}
-                                <tr>
-                                    {% for item in row %}
+                <h2>Prediction Results</h2>
+                <div style="overflow-x: auto; max-height: 400px;">
+                    <table style="border: 1px solid black; border-collapse: collapse;">
+                        {% for row in predictions_data %}
+                            <tr>
+                                {% for item in row %}
+                                    {% if loop.index == 2 and item|float > 0.89 %}
+                                        <td style="border: 1px solid black; padding: 8px; background-color: #FFA07A;">{{ item }}</td>
+                                    {% elif loop.index == 3 and item|float > 0.08 %}
+                                        <td style="border: 1px solid black; padding: 8px; background-color: #FFA07A;">{{ item }}</td>
+                                    {% elif loop.index == 4 and item|float > 4.3 %}
+                                        <td style="border: 1px solid black; padding: 8px; background-color: #FFA07A;">{{ item }}</td>
+                                    {% elif loop.index == 5 and item|float > 1.115 %}
+                                        <td style="border: 1px solid black; padding: 8px; background-color: #FFA07A;">{{ item }}</td>
+                                    {% elif loop.index == 6 and item|float > 0.7335 %}
+                                        <td style="border: 1px solid black; padding: 8px; background-color: #FFA07A;">{{ item }}</td>
+                                    {% elif loop.index == 7 and item|float > 1.9 %}
+                                        <td style="border: 1px solid black; padding: 8px; background-color: #FFA07A;">{{ item }}</td>
+                                    {% elif loop.index == 8 and item|float > 11.7 %}
+                                        <td style="border: 1px solid black; padding: 8px; background-color: #FFA07A;">{{ item }}</td>
+                                    {% elif loop.index == 10 and item|float > 0.27 %}
+                                        <td style="border: 1px solid black; padding: 8px; background-color: #FFA07A;">{{ item }}</td>
+                                    {% elif loop.index == 11 and -0.8622 > item|float %}
+                                        <td style="border: 1px solid black; padding: 8px; background-color: #FFA07A;">{{ item }}</td>
+                                    {% elif loop.index == 12 and item|float > 1.4 %}
+                                        <td style="border: 1px solid black; padding: 8px; background-color: #FFA07A;">{{ item }}</td>
+                                    {% else %}
                                         <td style="border: 1px solid black; padding: 8px;">{{ item }}</td>
-                                    {% endfor %}
-                                </tr>
-                            {% endfor %}
-                        </table>
-                    </div>
-                    <p>Download the Prediction Results file here: <a href="{{ url_for('download_file', filename=predictions_path) }}">{{ predictions_path }}</a></p>
-                {% endif %} -->
-                
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+                <p>Download the Prediction Results file here: <a href="{{ url_for('download_file', filename=predictions_path) }}">{{ predictions_path }}</a></p>
+                <p>*Noted: If these prodicted values exceed the set threshold, they will be highlighted. This indicates that the values do not meet the standards and may pose potential issues for the developability of the mAbs. </p>
+                <P>Threshold: Transformed ACSINS > 0.89; AS > 0.08; BVP > 4.3; Transformed CIC > 1.115; Transformed CSI > 0.734; ELISA > 1.9; HIC > 11.7; PSR > 0.27; Transformed SGAC < -0.862; Transformed SMAC > 1.4. </P>
+            {% endif %}
+            
             </div>
         </section>
     </main>
